@@ -1,5 +1,4 @@
+docs/screenshots.sh
 *.pyc
 __pycache__/
-/tmp/
-*.log
 .DS_Store
