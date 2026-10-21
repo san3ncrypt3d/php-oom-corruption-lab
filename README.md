@@ -35,8 +35,8 @@ that gap.
   confusion - no LFI, no planting).
 - **`patch/`** - interim mitigations (`mitigations.ini`, an `auto_prepend`
   runtime guard) for supported versions you cannot upgrade yet.
-- **`docs/`** - the full write-up (`blog.md`), root-cause notes (`ANALYSIS.md`),
-  and a step-by-step `REPRODUCE.md`.
+- **`docs/`** - root-cause notes (`ANALYSIS.md`) and a step-by-step
+  `REPRODUCE.md`. Full narrative write-up: [san3ncrypt3d.com](https://san3ncrypt3d.com/2026/10/21/php-oom-corruption/).
 
 ## Quick start
 
@@ -68,8 +68,9 @@ python3 poc/rce_handler_confusion.py --sid demoA               # pre-auth RCE (l
 
 ## Write-up
 
-[`docs/blog.md`](docs/blog.md) - full walkthrough with screenshots ·
-[`docs/ANALYSIS.md`](docs/ANALYSIS.md) - root cause ·
+Full walkthrough with screenshots: **[san3ncrypt3d.com/2026/10/21/php-oom-corruption](https://san3ncrypt3d.com/2026/10/21/php-oom-corruption/)**
+
+In this repo: [`docs/ANALYSIS.md`](docs/ANALYSIS.md) - root cause ·
 [`docs/REPRODUCE.md`](docs/REPRODUCE.md) - HTTP-only repro.
 
 ## Honest scope

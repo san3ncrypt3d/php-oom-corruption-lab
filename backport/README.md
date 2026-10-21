@@ -32,7 +32,7 @@ See [`zend_alloc_oom_guard.patch`](zend_alloc_oom_guard.patch).
 | In-script runtime OOM | normal fatal | **unchanged** - normal fatal, no guard |
 | Normal request | works | works |
 
-![backport before/after](../docs/img/09-eol-backport.png)
+Reproduce it yourself with [`prove.sh`](prove.sh) (see below).
 
 ## Build & verify
 
