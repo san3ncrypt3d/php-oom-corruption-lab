@@ -1,4 +1,4 @@
-# Technical analysis — CVE-2026-109618 & CVE-2026-109619
+# Technical analysis - CVE-2026-109618 & CVE-2026-109619
 
 > Scope note: this repo is a **verification lab**, not a weaponised exploit. It
 > demonstrates the *primitives* (attacker bytes reaching session storage, and an
@@ -19,8 +19,8 @@ by commit `3584a98bda`. Affected range is roughly PHP 5.4 → 8.5.11.
 
 `session.upload_progress.enabled` is **On by default**. When a multipart POST
 carries a field named `PHP_SESSION_UPLOAD_PROGRESS`, PHP's `rfc1867` upload
-handler writes progress data — including the **raw, unsanitised upload
-filename** — into the session file, and it does this *very early* in request
+handler writes progress data - including the **raw, unsanitised upload
+filename** - into the session file, and it does this *very early* in request
 handling, before most of the engine is initialised and with no authentication.
 
 That gives an unauthenticated attacker two things at once:
@@ -31,7 +31,7 @@ That gives an unauthenticated attacker two things at once:
 
 ## The primitives this lab demonstrates
 
-### Primitive 1 — session-file injection (`poc/demo_injection.py`)
+### Primitive 1 - session-file injection (`poc/demo_injection.py`)
 
 A single ordinary multipart POST places attacker-chosen bytes into
 `sess_<id>`. Observed in the lab (`session.upload_progress.cleanup` left On by
@@ -42,13 +42,13 @@ deterministic demo):
 upload_progress_demo|a:5:{...;s:4:"name";s:27:"INJECTED_MARK_<?=marker?>";...}
 ```
 
-The marker is stored verbatim — no escaping, no validation.
+The marker is stored verbatim - no escaping, no validation.
 
-### Primitive 2 — object destructor reachability (`poc/demo_destruct.py`)
+### Primitive 2 - object destructor reachability (`poc/demo_destruct.py`)
 
 With `session.serialize_handler = php`, a session record of the form
 `key|O:...` is **deserialised into a live object** on the next
-`session_start()`, and its `__destruct()` runs at request shutdown — with no
+`session_start()`, and its `__destruct()` runs at request shutdown - with no
 call to `unserialize()` anywhere in the application. The lab proves this with a
 benign canary gadget:
 
@@ -59,7 +59,7 @@ DestructProbe::__destruct fired marker=rce-proof
 On a real target the attacker substitutes an application/framework class whose
 destructor is dangerous. See Primitive 3.
 
-### Primitive 3 — object injection to RCE via a file-write gadget (`poc/demo_rce.py`)
+### Primitive 3 - object injection to RCE via a file-write gadget (`poc/demo_rce.py`)
 
 No LFI/RFI required. A `__destruct()` that flushes buffered content to a path is
 an extremely common gadget shape (template/view caches, compiled configs, log
@@ -111,8 +111,8 @@ Allowed memory size of 2097152 bytes exhausted ... in Unknown on line 0
 visible in the worker log under identical load:
 
 ```
-php:8.3.35  child exited with code 70   (worker killed, respawns — bailout corrupts state)
-php:8.3.36  ready to handle connections (worker survives — delayed soft-OOM)
+php:8.3.35  child exited with code 70   (worker killed, respawns - bailout corrupts state)
+php:8.3.36  ready to handle connections (worker survives - delayed soft-OOM)
 ```
 
 Escalating that corrupted-state window to code execution is heap/build-dependent

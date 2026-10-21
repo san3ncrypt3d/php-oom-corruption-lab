@@ -8,7 +8,7 @@
 <p>Deliberately-vulnerable <code>PHP <?= PHP_VERSION ?></code>
    (<?= PHP_SAPI ?>). For CVE-2026-109618 / CVE-2026-109619 research only.</p>
 <ul>
-  <li><a href="/info.php">/info.php</a> — machine-readable condition report (JSON)</li>
-  <li><a href="/session_probe.php">/session_probe.php</a> — session read/write demonstrator</li>
+  <li><a href="/info.php">/info.php</a> - machine-readable condition report (JSON)</li>
+  <li><a href="/session_probe.php">/session_probe.php</a> - session read/write demonstrator</li>
 </ul>
 </body></html>

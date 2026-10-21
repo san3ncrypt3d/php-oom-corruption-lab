@@ -3,7 +3,7 @@
 Both are driven entirely by HTTP requests against the lab. No `podman exec`
 writing session files. Teardown: `cd lab && podman compose down -v`.
 
-## Serialize-handler confusion — pre-auth RCE, no LFI (known object-injection class)
+## Serialize-handler confusion - pre-auth RCE, no LFI (known object-injection class)
 
 **Precondition (server misconfig):** two locations with different
 `session.serialize_handler` sharing one `save_path`. The lab sets `/ps/` to
@@ -15,7 +15,7 @@ when the `php`-handler consumer reads the same session id it splits on the `|`
 the attacker put in the filename and `unserialize()`s the tail into a
 `CacheFlush` object, whose `__destruct()` writes a PHP file to the webroot.
 Double quotes (which `serialize()` needs) are smuggled in by sending `\"` in the
-multipart filename — PHP stores them as real quotes.
+multipart filename - PHP stores them as real quotes.
 
 ```bash
 python3 poc/rce_handler_confusion.py --sid chaincAAA
@@ -27,7 +27,7 @@ python3 poc/rce_handler_confusion.py --sid chaincAAA
 
 Session IDs must be `[A-Za-z0-9,-]` only (no `_`).
 
-## OOM core — CVE-2026-109618 / 109619 (the novel part)
+## OOM core - CVE-2026-109618 / 109619 (the novel part)
 
 **No app precondition.** A body larger than `memory_limit` makes PHP OOM while
 reading the request, before any user code runs. The lab's OOM target uses a low

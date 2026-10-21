@@ -1,4 +1,4 @@
-# EOL backport — fail-closed OOM guard
+# EOL backport - fail-closed OOM guard
 
 CVE-2026-109618 / 109619 are fixed in PHP 8.2.35 / 8.3.36 / 8.4.27 / 8.5.12.
 **PHP ≤ 8.1 is end-of-life and will never receive the fix**, yet a large share
@@ -8,7 +8,7 @@ for those systems, derived from the official fix's "hard exit" idea.
 ## What it does
 
 The official fix (commit `3584a98bda`) stops the engine from `longjmp`-ing out of
-an out-of-memory condition — a bailout raised during **request startup** unwinds
+an out-of-memory condition - a bailout raised during **request startup** unwinds
 through half-initialised state and leaves it corrupt (the pre-auth memory-safety
 core of both CVEs). That fix spans ~300 files and cannot be cleanly replayed on
 8.1.
@@ -19,7 +19,7 @@ This patch instead changes the single OOM choke point, `zend_mm_safe_error()`:
   (`EG(current_execute_data) == NULL`), **before** `zend_error_noreturn()` can
   alter executor state;
 - if so, report the error and `_exit(70)` immediately instead of
-  `zend_bailout()` — no code runs on corrupt state;
+  `zend_bailout()` - no code runs on corrupt state;
 - in-script OOMs (execute_data set) keep normal, catchable behaviour.
 
 See [`zend_alloc_oom_guard.patch`](zend_alloc_oom_guard.patch).
@@ -29,7 +29,7 @@ See [`zend_alloc_oom_guard.patch`](zend_alloc_oom_guard.patch).
 | Case | Unpatched | Patched |
 |------|-----------|---------|
 | Startup-window OOM (faithful nested-vars POST) | bailout → `exit 255` | guard → `exit 70`, bailout skipped |
-| In-script runtime OOM | normal fatal | **unchanged** — normal fatal, no guard |
+| In-script runtime OOM | normal fatal | **unchanged** - normal fatal, no guard |
 | Normal request | works | works |
 
 ![backport before/after](../docs/img/09-eol-backport.png)
@@ -53,6 +53,6 @@ The repeatable trigger and harness are in [`../research/`](../research).
 ## Tradeoff
 
 A startup-window OOM now terminates the worker (FPM respawns it). That's the same
-availability outcome the vulnerable build already had on this path — it exited
-with code 70 — minus the exploitable corrupt-state window. It is a stopgap, not a
+availability outcome the vulnerable build already had on this path - it exited
+with code 70 - minus the exploitable corrupt-state window. It is a stopgap, not a
 substitute for upgrading off EOL PHP.
