@@ -1,0 +1,46 @@
+# Hardening backport for CVE-2026-109618 / CVE-2026-109619, for EOL PHP
+# (<= 8.1) that will never receive the official fix (commit 3584a98bda).
+#
+# The official fix stops longjmp-ing out of an OOM: a bailout raised during
+# request startup unwinds through half-initialised engine state and leaves it
+# corrupt, which is the pre-auth memory-safety core of both CVEs. Reproducing
+# all ~300 files on an EOL branch is impractical, so this is a surgical,
+# fail-closed mitigation at the single OOM choke point, zend_mm_safe_error():
+#
+#   * capture, at function entry, whether we are in the startup/parse window
+#     (EG(current_execute_data) == NULL) -- BEFORE zend_error_noreturn() can
+#     alter executor state;
+#   * if so, report the error then terminate the process immediately with
+#     _exit(70) instead of zend_bailout(), so NO code runs on corrupt state.
+#   * in-script OOMs (execute_data set) keep normal, catchable behaviour.
+#
+# Tradeoff: a startup-window OOM now terminates the worker (FPM respawns it) --
+# the same availability outcome the vulnerable build already had on this path
+# (it exited with code 70), minus the exploitable window.
+#
+# Apply against Zend/zend_alloc.c of a PHP 8.1.x source tree:
+
+--- a/Zend/zend_alloc.c
++++ b/Zend/zend_alloc.c
+@@ zend_mm_safe_error (function entry)
+ 	size_t size)
+ {
++	/* OOM-guard backport: capture phase BEFORE zend_error_noreturn can alter EG state */
++	int oom_in_startup = (EG(current_execute_data) == NULL);
+
+ 	heap->overflow = 1;
+@@ zend_mm_safe_error (tail)
+ 	heap->overflow = 0;
+-	zend_bailout();
+-	exit(1);
++	/* OOM-guard hardening backport CVE-2026-109618/109619: an OOM in the request
++	 * startup/parse window (no execute_data yet) is the one whose bailout
++	 * longjmp corrupts engine state. Fail closed there; leave in-script OOMs
++	 * catchable. */
++	if (oom_in_startup) {
++		fprintf(stderr, "oom-guard: startup-window OOM -> fail-closed exit (bailout skipped)\n");
++		fflush(stderr);
++		_exit(70);
++	}
++	zend_bailout();
++	exit(1);

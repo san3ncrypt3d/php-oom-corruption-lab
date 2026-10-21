@@ -1,0 +1,39 @@
+# php-oom-corruption-lab lab -- vulnerable PHP 8.3.35, bound to 127.0.0.1. Throwaway host only.
+#   apache :18081 (mod_php)   nginx->fpm :18080
+services:
+  apache:
+    image: docker.io/library/php:8.3.35-apache-bookworm
+    container_name: oomlab-apache
+    ports:
+      - "127.0.0.1:18081:80"
+    volumes:
+      - ./www:/var/www/html:ro
+      - ./apache/php-apache.ini:/usr/local/etc/php/conf.d/zz-lab.ini:ro
+      - webdata:/var/www/html/data
+    tmpfs:
+      - /var/lib/php/sessions:mode=1733
+
+  fpm:
+    image: docker.io/library/php:8.3.35-fpm-bookworm
+    container_name: oomlab-fpm
+    volumes:
+      - ./www:/var/www/html:ro
+      - ./fpm/php-fpm.ini:/usr/local/etc/php/conf.d/zz-lab.ini:ro
+      - ./fpm/www.conf:/usr/local/etc/php-fpm.d/zz-lab.conf:ro
+      - sessions:/var/lib/php/sessions
+      - webdata:/var/www/html/data
+
+  nginx:
+    image: docker.io/library/nginx:1.27-bookworm
+    container_name: oomlab-nginx
+    ports:
+      - "127.0.0.1:18080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./www:/var/www/html:ro
+    depends_on:
+      - fpm
+
+volumes:
+  sessions:
+  webdata:
